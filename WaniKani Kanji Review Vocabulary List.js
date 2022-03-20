@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WaniKani Kanji Review Vocabulary List
 // @namespace    http://kurifuri.com/
-// @version      0.5.1
+// @version      0.5.2
 // @description  Displays vocabulary words when reviewing kanji on WaniKani.
 // @author       Christopher Fritz
 // @match        https://www.wanikani.com/review/session
@@ -30,7 +30,7 @@
 
     // Only show vocabulary with a reading matching the readings WaniKani is asking for (kunyomi, onyomi, or nanori).
     // Warning: This requires an exact match.  It will not show vocabulary that use a rendaku version of the reading.
-    const MATCH_VOCABULARY_READING_TO_KANJI_ANSWER = false
+    const MATCH_VOCABULARY_READING_TO_KANJI_ANSWER = true
 
     // Limit number of vocabulary words to be shown.  Must be an integer.
     const MAX_VOCABULARY_TO_SHOW = 100
@@ -38,7 +38,7 @@
     // Show locked vocabulary words.  Must be true or false.
     const SHOW_LOCKED_VOCABULARY = true
 
-    // Vocabulary words will be blurred until the vocabuary bar is hovered over by mouse.
+    // Vocabulary words will be blurred until the vocabuary bar is hovered over by mouse.  Must be true or false.
     const BLUR_VOCABULARY_LIST = false
     // ****************************************************************************************************/
 
@@ -143,13 +143,22 @@
             // Only check kanji for the reading type being accepted as an answer.
             if (kanji_reading.type !== reading_type) {continue;}
 
+            let no_dakuten_kanji_reading = remove_dakuten(kanji_reading.reading);
             for (const vocabulary_reading of vocabulary.data.readings) {
-                if (vocabulary_reading.reading.includes(kanji_reading.reading)) {
+                if (remove_dakuten(vocabulary_reading.reading).includes(no_dakuten_kanji_reading)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    // Removes dakuten and handakuten.  This is necessary when filtering to show only vocabulary words whose kanji
+    // shares the reading WaniKani expects to be entered for the kanji reading, as some vocabulary words use a
+    // dakuten version of the reading.
+    function remove_dakuten(input)
+    {
+        return input.normalize('NFD').replace('\u3099', '').replace('\u309A', '');
     }
 
     function clear_vocabulary()
