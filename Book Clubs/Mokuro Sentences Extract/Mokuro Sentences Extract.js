@@ -13,6 +13,10 @@ function addStyleSheet() {
             position: absolute;
             top: -2em;
         }
+
+        div.textbox.next {
+            border-color: green !important;
+        }
         `
 
     const styleSheet = document.createElement("style")
@@ -83,6 +87,8 @@ function storeTextBox(textBox) {
     textBox.style.display = 'none'
     // Add a style so querySelector can know this one is "done".
     textBox.classList.add('done')
+    textBox.classList.remove('pending')
+    textBox.classList.remove('next')
 
 }
 
@@ -97,6 +103,7 @@ function undoLastTextBox() {
     const textBox = clickedElements.pop()
     textBox.style.display = 'block'
     textBox.classList.remove('done')
+    textBox.classList.add('pending')
 
 }
 
@@ -146,19 +153,22 @@ for (let textBox of textBoxes) {
 // When the mouse moves off the page, check whether to move to the next page.
 const pages = document.querySelectorAll('div.page')
 for (let page of pages) {
-   page.addEventListener('mouseleave', tryToChangePage)
+    page.addEventListener('mouseleave', tryToChangePage)
 
-   // Add a per-page number to each textbox on the page.
-   const pageTextBoxes = page.querySelectorAll('div.textbox')
-   //const boxCount = pageTextBoxes.length
-   //const padding = (''+boxCount).length
-   let boxNumber = 0
-   for (let pageTextBox of pageTextBoxes) {
-       boxNumber += 1
+    // Add a per-page number to each textbox on the page.
+    const pageTextBoxes = page.querySelectorAll('div.textbox')
+    //const boxCount = pageTextBoxes.length
+    //const padding = (''+boxCount).length
+    let boxNumber = 0
+    for (let pageTextBox of pageTextBoxes) {
+        boxNumber += 1
 
-       pageTextBox.dataset.numberOnPage = (''+boxNumber) //.padStart(padding, '0')
+        pageTextBox.dataset.numberOnPage = (''+boxNumber) //.padStart(padding, '0')
+        pageTextBox.classList.add('pending')
+        if (1== boxNumber) {
+            pageTextBox.classList.add('next')
+        }
     }
-
 }
 
 let numbers = ''
@@ -187,30 +197,49 @@ document.addEventListener("keydown", function onEvent(e) {
     }
 
     const currentPage = document.querySelector('div.page[style="display: inline-block; order: 2;"]')
-    const textBoxes = currentPage.querySelectorAll('div.textBox')
+
+    const allTextBoxes = currentPage.querySelectorAll('div.textBox')
+    const pendingTextBoxes = currentPage.querySelectorAll('div.textBox.pending')
     const doneTextBoxes = currentPage.querySelectorAll('div.textBox.done')
-    if ('1' == numbers && 10 <= textBoxes.length) {
-        const pageOneDone = 0 < currentPage.querySelectorAll('div.textBox.done[data-number-on-page="1"]').length
-        if (pageOneDone) {
-            // Dialogue box 1 has already been selected.  This must be a teen.
-            return
+
+    if ('0' == numbers) {
+        const nextTextBox = currentPage.querySelector('div.textBox.next')
+        if (null != nextTextBox) {
+            storeTextBox(nextTextBox)
         }
-        const donePagesCount = currentPage.querySelectorAll('div.textBox.done').length
-        if (3 < donePagesCount) {
-            // Chances are box 1 was skipped over intentionally, and this is part of 10 or higher.
-            return
+    }
+    else {
+        if ('1' == numbers && 10 <= allTextBoxes.length) {
+            const pageOneDone = 0 < currentPage.querySelectorAll('div.textBox.done[data-number-on-page="1"]').length
+            if (pageOneDone) {
+                // Dialogue box 1 has already been selected.  This must be a teen.
+                return
+            }
+            const donePagesCount = currentPage.querySelectorAll('div.textBox.done').length
+            if (3 < donePagesCount) {
+                // Chances are box 1 was skipped over intentionally, and this is part of 10 or higher.
+                return
+            }
+        }
+        const textBoxToSelect = currentPage.querySelector(`div.textBox[data-number-on-page="${numbers}"]`)
+        if (null != textBoxToSelect) {
+            storeTextBox(textBoxToSelect)
         }
     }
 
-    const textBoxToSelect = currentPage.querySelector(`div.textBox[data-number-on-page="${numbers}"]`)
-    if (null != textBoxToSelect) {
-        storeTextBox(textBoxToSelect)
+    // If the "next" box was selected, then mark the next "next" box.
+    // TODO: Ensure this doesn't add it if it's already there.
+    const nextNextTextBox = currentPage.querySelector('div.textBox.pending')
+    if (null != nextNextTextBox) {
+        console.log("Adding next.")
+        nextNextTextBox.classList.add('next')
+        console.log(nextNextTextBox)
     }
 
     numbers = ''
 
     // If this was the last number, move to the next page.
-    if (doneTextBoxes.length + 1 == textBoxes.length) {
+    if (1 == pendingTextBoxes.length) {
         inputLeft()
     }
 
