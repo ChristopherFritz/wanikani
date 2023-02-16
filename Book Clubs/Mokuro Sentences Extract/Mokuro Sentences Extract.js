@@ -186,7 +186,6 @@ document.addEventListener("keydown", function onEvent(e) {
         return
     }
 
-    // Maybe . to "submit", and * to "undo"?
     const currentPage = document.querySelector('div.page[style="display: inline-block; order: 2;"]')
     const textBoxes = currentPage.querySelectorAll('div.textBox')
     const doneTextBoxes = currentPage.querySelectorAll('div.textBox.done')
