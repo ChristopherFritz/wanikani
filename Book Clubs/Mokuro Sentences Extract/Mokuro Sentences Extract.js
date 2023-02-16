@@ -1,3 +1,26 @@
+function addStyleSheet() {
+
+    const styles = `
+        div.textbox::after
+        {
+            font-size: 1.5em;
+            content : attr(data-number-on-page);
+            border: solid thin black;
+            padding: 0.5em;
+            background-color: white;
+            text-orientation: upright;
+            writing-mode: horizontal-tb;
+            position: absolute;
+            top: -2em;
+        }
+        `
+
+    const styleSheet = document.createElement("style")
+    styleSheet.innerText = styles
+    document.head.appendChild(styleSheet)
+}
+
+
 function updateLocalStorage() {
 
     // TODO: Implement this.
@@ -14,10 +37,7 @@ function saveLocalStorageToFile() {
 
         const textBox = document.querySelector(`div.textBox[data-index-number="${storedIndex}"]`)
 
-        console.log(textBox)
-
         // Get the page number.
-        console.log(textBox.parentNode.parentNode)
         const pageNumber = textBox.parentNode.parentNode.id.replace('page', '')
 
         if (!(pageNumber in output)) {
@@ -48,9 +68,13 @@ function saveLocalStorageToFile() {
 
 }
 
-function storeTextBox(e) {
+function storeTextBoxHover(e) {
 
-    const textBox = e.target
+    storeTextBox(e.target)
+
+}
+
+function storeTextBox(textBox) {
 
     storedIndexes.push(textBox.dataset.indexNumber)
     clickedElements.push(textBox)
@@ -76,7 +100,7 @@ function undoLastTextBox() {
 
 }
 
-function tryToChangePages(e) {
+function tryToChangePage(e) {
 
     const page = e.target
 
@@ -90,6 +114,8 @@ function tryToChangePages(e) {
 let storedIndexes = []
 let clickedElements = []
 
+addStyleSheet()
+
 const textBoxes = document.querySelectorAll('div.textBox')
 
 let indexNumber = 0
@@ -102,9 +128,9 @@ for (let textBox of textBoxes) {
     textBox.dataset.indexNumber = indexNumber
 
     // Style the textbox.
-    textBox.style.backgroundColor = 'yellow'
+    //textBox.style.backgroundColor = 'yellow'
     textBox.style.border = '5px solid red'
-    textBox.style.opacity = 0.5
+    //textBox.style.opacity = 0.5
 
     // Hide the P's.
     const paragraphs = textBox.querySelectorAll('p')
@@ -113,13 +139,80 @@ for (let textBox of textBoxes) {
     }
 
     // Change the appearance of the textbox on hover.
-    textBox.addEventListener('mouseover', storeTextBox)
+    textBox.addEventListener('mouseover', storeTextBoxHover)
 
 }
 
 // When the mouse moves off the page, check whether to move to the next page.
 const pages = document.querySelectorAll('div.page')
 for (let page of pages) {
-   page.addEventListener('mouseleave', tryToChangePages)
+   page.addEventListener('mouseleave', tryToChangePage)
+
+   // Add a per-page number to each textbox on the page.
+   const pageTextBoxes = page.querySelectorAll('div.textbox')
+   //const boxCount = pageTextBoxes.length
+   //const padding = (''+boxCount).length
+   let boxNumber = 0
+   for (let pageTextBox of pageTextBoxes) {
+       boxNumber += 1
+
+       pageTextBox.dataset.numberOnPage = (''+boxNumber) //.padStart(padding, '0')
+    }
+
 }
 
+let numbers = ''
+
+// Track typing numbers.
+document.addEventListener("keydown", function onEvent(e) {
+
+    // Handle undo.
+    if ('*' == e.key) {
+        undoLastTextBox()
+        return
+    }
+
+    // Intentionally move to the next page.
+    if ('/' == e.key) {
+        inputLeft()
+        return
+    }
+
+    // Handle number press.
+    if (/^\d$/.test(e.key)) {
+        numbers += e.key
+    }
+    else {
+        return
+    }
+
+    // Maybe . to "submit", and * to "undo"?
+    const currentPage = document.querySelector('div.page[style="display: inline-block; order: 2;"]')
+    const textBoxes = currentPage.querySelectorAll('div.textBox')
+    const doneTextBoxes = currentPage.querySelectorAll('div.textBox.done')
+    if ('1' == numbers && 10 <= textBoxes.length) {
+        const pageOneDone = 0 < currentPage.querySelectorAll('div.textBox.done[data-number-on-page="1"]').length
+        if (pageOneDone) {
+            // Dialogue box 1 has already been selected.  This must be a teen.
+            return
+        }
+        const donePagesCount = currentPage.querySelectorAll('div.textBox.done').length
+        if (3 < donePagesCount) {
+            // Chances are box 1 was skipped over intentionally, and this is part of 10 or higher.
+            return
+        }
+    }
+
+    const textBoxToSelect = currentPage.querySelector(`div.textBox[data-number-on-page="${numbers}"]`)
+    if (null != textBoxToSelect) {
+        storeTextBox(textBoxToSelect)
+    }
+
+    numbers = ''
+
+    // If this was the last number, move to the next page.
+    if (doneTextBoxes.length + 1 == textBoxes.length) {
+        inputLeft()
+    }
+
+})
