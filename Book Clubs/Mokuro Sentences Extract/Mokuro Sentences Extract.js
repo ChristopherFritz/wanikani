@@ -228,7 +228,6 @@ document.addEventListener("keydown", function onEvent(e) {
     }
 
     // If the "next" box was selected, then mark the next "next" box.
-    // TODO: Ensure this doesn't add it if it's already there.
     const nextNextTextBox = currentPage.querySelector('div.textBox.pending')
     if (null != nextNextTextBox) {
         console.log("Adding next.")
