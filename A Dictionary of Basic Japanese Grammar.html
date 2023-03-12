@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<style>
+body {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  height: 98vh;
+  overflow: hidden;
+}
+
+#search-container {
+  width: 300px;
+  margin-right: 280px;
+  padding: 5px 10px;
+}
+
+#image-container {
+  margin-left: -300px;
+  margin-right: 300px;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 280px;
+}
+li {
+  padding: 2px 3px;
+}
+li:nth-child(odd) {
+  background-color: #CCC;
+  margin: 3px 0;
+}
+</style>
+
+<script>
+const toc = JSON.parse(`
+{
+  "ageru1 's.o. gives s.t. to s.o.'": 63,
+  "ageru2 's.o. gives s.o. a faver by doing s.t.'": 65,
+  "aida (ni)": 67,
+  "amari": 72,
+  "anmari <amari>": 72,
+  "aru1 'exist'": 73,
+  "aru2 's.t. has been done'": 76,
+  "ato de": 78,
+
+  "ba": 81,
+  "bakari": 84,
+  "bakari de (wa) naku ~ (mo) <dake de (wa) naku ~ (mo)>": 97,
+  "ba yokatta": 87,
+
+  "-chan <-sama>": 384,
+  "chau <shimau>": 405,
+  "chimau <shimau>": 405,
+  "chittomo <amari>": 72,
+  "chuu (ni) <uchi-ni>": 512,
+
+  "da <~ wa ~ da>": 521,
+  "daga <ga2>": 120,
+  "dai": 90,
+  "da kara <sore de>": 413,
+  "dake": 93,
+  "dake de (wa) naku ~ (mo)": 97,
+  "dakego <ga2>": 120,
+  "~dara <~tara>": 455,
+  "darou": 100,
+  "~dasu": 102,
+  "-datte <-tatte>": 462,
+  "de <-te>": 464,
+  "de1 [location]": 105,
+  "de2 [instrument]": 106,
+  "de3 [te-form of desu]": 107,
+  "de4 [time]": 109,
+  "de ageru <ageru2>": 65,
+  "de aru <aru2>": 76,
+  "de hoshii <hoshii2>": 146,
+  "de iru <iru2>": 155,
+  "de itadaku <morau>": 263,
+  "de kara <kara2>": 177,
+  "de kudasai <~kudasai>": 209,
+  "de kudasaru <kureru2>": 216,
+  "de kureru <kureru2>": 216,
+  "de miru <miru>": 246,
+  "demo 'even'": 111,
+  "demo <ga2>": 120,
+  "de mo <te mo> 'even if ~'": 468,
+  "de mo ii <~te mo ii>": 471,
+  "de moraitai <hoshii2>": 146,
+  "de morau <morau2>": 263,
+  "de oku <oku>": 358,
+  "de sashiageru <ageru2>": 65,
+  "de shikata ga nai <tamaranai>": 447,
+  "de shimau <shimau>": 403,
+  "deshou <darou>": 100,
+  "desu <~wa ~da>": 521,
+  "de tamaranai <tamaranai>": 446,
+  "de wa ikenai <~wa ikena>": 528,
+  "de wa naranai <~wa ikena>": 528,
+  "de yaru <ageru2>": 67,
+  "dou": 114,
+  "-domo <-tachi>": 440,
+
+  "e [direction]": 116,
+  "eru <rareru2>": 370,
+
+  "ga1 [subject marker]": 118,
+  "ga2 'but'": 120,
+  "~garu": 123,
+  "-gata <-tach>": 440,
+  "go- <o->": 343,
+  "goro": 126,
+  "goto ni": 128,
+  "gurai <kura>": 213,
+
+  "~hajimeru": 131,
+  "hazu": 133,
+  "hodo": 135,
+  "houhou <-kata>": 183,
+  "hou ga ii": 138,
+  "~hou ga ~yori": 140,
+  "hoshii1 'want s.t.'": 144,
+  "hoshii2 'want s.o. to do s.t.'": 146,
+
+  "ichiban": 148,
+  "ikaga <do>": 114,
+  "iku1 'go'": 149,
+  "iku2 'go on -ing'": 151,
+  "iru1 'exist'": 153,
+  "iru2 'be -ing'": 155,
+  "iru2 'need'": 157,
+  "itadaku <morau1>": 262,
+
+  "jau <shimau>": 405,
+  "jibun1 [empathy marker]": 159,
+  "jibun2 [contrast marker]": 161,
+  "jimau <shimau>": 405,
+
+  "ka1 'or'": 164,
+  "ka2 [question marker]": 166,
+  "ka (dou ka)": 168,
+  "kai": 170,
+  "kamoshirenai": 173,
+  "kanaa <kashira>": 182,
+  "ka ne <ne>": 288,
+  "kara1 'from'": 176,
+  "kara2 'after doing s.t.'": 177,
+  "kara3 'because'": 179,
+  "kara ne <ne>": 288,
+  "kashira": 181,
+  "-kata": 183,
+  "kawari ni": 184,
+  "kedo <keredomo>": 188,
+  "kedomo <keredomo>": 188,
+  "kekkyoku <yahari>": 538,
+  "keredo <keredomo>": 188,
+  "keredomo": 187,
+  "kesshite <amari>": 72,
+  "kikeru <kikoeru>": 188,
+  "kikoeru": 188,
+  "kiraida": 190,
+  "koto1 'thing'": 191,
+  "koto2 [nominalizer]": 193,
+  "koto ga aru1 'there was a time when ~'": 196,
+  "koto ga aru2 'there are times when ~'": 198,
+  "koto ga dekiru": 200,
+  "koto ni kimeru <koto ni suru>": 204,
+  "koto ni naru": 202,
+  "koto ni natte iru <koto ni naru>": 202,
+  "koto ni shite iru <koto ni suru>": 204,
+  "koto ni suru": 204,
+  "koto wa 'indeed ~ but'": 206,
+  "~kudasai": 209,
+  "kudasaru <~kudasai, kureru1,2>": 210,
+  "kudasaru <~kudasai, kureru1,2>": 215,
+  "kudasaru <~kudasai, kureru1,2>": 218,
+  "-kun": 211,
+  "kurai": 212,
+  "kureru1 's.o. gives s.t. to me'": 213,
+  "kureru2 's.o. gives me a favor by doing s.t.'": 216,
+  "kuru1 'come'": 219,
+  "kuru2 'begin to, come to'": 221,
+
+  "mada": 224,
+  "made": 225,
+  "made de <made ni>": 228,
+  "made ni": 228,
+  "mae ni": 231,
+  "mai-": 233,
+  "mama": 236,
+  "masaka <yahari>": 538,
+  "~mashou": 240,
+  "mettani <amari>": 72,
+  "-mi <-sa>": 381,
+  "mieru": 243,
+  "mirareru <mieru>": 243,
+  "miru": 246,
+  "mitaida <youda>": 550,
+  "mo1 'also'": 247,
+  "mo2 'even'": 250,
+  "mou": 254,
+  "~mo ~mo": 255,
+  "mon <mono (da)>": 260,
+  "mono (da)": 257,
+  "mono <koto1>": 191,
+  "morau1 'receive'": 261,
+  "morau2 'receive a favor of doing s.t.'": 263,
+  "motte iru <aru1>": 73,
+
+  "na": 266,
+  "nado": 267,
+  "nagara": 269,
+  "~nai de": 271,
+  "~nai de <~kudasai>": 209,
+  "~nai to ikenai <~nakereba naranai>": 274,
+  "~nakereba naranai": 274,
+  "~naku(t)cha <~nakereba naranai>": 276,
+  "~naku naru": 277,
+  "~nakute": 279,
+  "~nakute wa ikenai <~nakereba narana>": 274,
+  "~nakute wa naranai <~nakereba narana>": 274,
+  "nanka <nado>": 267,
+  "nara": 281,
+  "naru <o ~ ni naru>": 358,
+  "~nasai": 284,
+  "ne": 286,
+  "~neba naranai <~nakereba naranai>": 274,
+  "n da <no da>": 325,
+  "n desu <no da>": 325,
+  "ni1 [point of time]": 289,
+  "ni2 [indirect object marker]": 291,
+  "ni3 [agent / source marker]": 292,
+  "ni4 [direct contact]": 295,
+
+  "ni5 [purpose]": 297,
+  "ni6 [location (existence)]": 299,
+  "ni7 [direction]": 302,
+  "ni 'and' <to1>": 473,
+  "ni chigainai": 304,
+  "ni kimeru <~ni suru>": 310,
+  "-nikui": 307,
+  "~ni shite wa": 309,
+  "~ni suru": 310,
+  "no1 [possessive marker]": 312,
+  "no2 'one (pronoun)'": 315,
+  "no3 [nominalizer]": 318,
+  "no4 [sentence-final particle]": 322,
+  "no da": 325,
+  "node": 328,
+  "no desu <no da>": 325,
+  "no hou ga <~hou ga ~yori>": 140,
+  "noni1 'even though'": 331,
+  "noni2 'in the process of doing ~'": 335,
+  "no wa ~ da": 337,
+
+  "o-": 343,
+  "o1 [direct object marker]": 347,
+  "o2 [space marker]": 349,
+  "o3 [a point of detachment]": 351,
+  "o4 [emotive marker]": 352,
+  "oui": 354,
+  "oki ni <goto ni>": 128,
+  "oku": 357,
+  "o ~ ni naru": 358,
+  "o ~ suru": 360,
+  "ou to omou <~you to omou>": 569,
+  "o tsukatte <de2>": 106,
+  "~owaru": 362,
+  "ouzei <oui>": 354,
+
+  "-ra <-tachi>": 440,
+  "rareru1 [passive]": 364,
+  "rareru2 'can (potential)'": 370,
+  "rashii": 373,
+  "Relative Clause": 376,
+  "reru <rareru1>": 364,
+
+  "-sa": 381,
+  "-sama": 384,
+  "-san <-sama>": 384,
+  "sappari <amar>": 72,
+  "saserareru <saseru>": 392,
+  "saseru": 387,
+  "sashiageru <ageru1>": 64,
+  "sasuga (ni) <yahari>": 538,
+  "sekkaku": 392,
+  "seru <saseru>": 387,
+  "shi": 395,
+  "-shi-": 397,
+  "shika": 398,
+  "shikashi <ga2, kawari ni>": 120,
+  "shikashi <ga2, kawari ni>": 184,
+  "shikata ga nai <tamaranai>": 445,
+  "shimau": 403,
+  "shiru": 406,
+  "souda1 [hearsay]": 407,
+  "~souda2 'looks'": 410,
+  "sore de": 413,
+  "sore de wa": 414,
+  "sore kara": 416,
+  "sore nara": 419,
+  "soretomo": 421,
+  "soshite": 422,
+  "sugiru": 423,
+  "sukida": 426,
+  "sukoshimo <amari>": 72,
+  "sukunai": 427,
+  "suru1 'do, play'": 428,
+  "suru2 'have'": 434,
+  "suru3 [sensation]": 435,
+  "suru4 'cost / lapse'": 436,
+  "suru <o ~ suru (humble)>": 360,
+  "suru to": 437,
+
+  "-tachi": 440,
+  "-tai": 441,
+  "takusan <oui>": 354,
+  "tamaranai": 445,
+  "tame (ni)": 447,
+  "~tara": 452,
+  "~tara dou desu ka": 457,
+  "~tari ~tari suru": 458,
+  "-tatte": 461,
+  "-te": 464,
+  "-te <~kudasai>": 209,
+  "te ageru <ageru2>": 65,
+  "te aru <aru2>": 76,
+  "te hoshii <hoshii2>": 146,
+  "te iru <iru2>": 155,
+  "te itadaku <morau2>": 265,
+  "te kara <kara2>": 177,
+  "te kudasai (~kudasai>": 209,
+  "te kudasaru <kureru2>": 218,
+  "te kureru <kureru2>": 216,
+  "te miru <miru>": 246,
+  "te mo": 468,
+  "~te mo ii": 471,
+  "te moraitai <hoshii2>": 147,
+  "te morau <morau2>": 263,
+  "te ne <ne>": 288,
+  "te oku <oku>": 357,
+  "te sashiageru <ageru2>": 67,
+  "te shikata ga nai <tamaranai>": 447,
+
+  "te shimau <shimau>": 403,
+  "te tamaranai <tamaranai>": 446,
+  "te wa ikenai <~wa ikena>": 528,
+  "te wa naranai <~wa ikena>": 528,
+  "te yaru <ageru2>": 67,
+  "te yokatta <ba yokatta>": 89,
+  "to1 'and'": 473,
+  "to2 'with'": 476,
+  "to3 [quote marker]": 478,
+  "to4 'if, when'": 480,
+  "~to ieba": 484,
+  "to ittara <~to ieba>": 485,
+  "~to iu": 486,
+  "toka": 488,
+  "toki": 490,
+  "to kitara <~to ieba>": 485,
+  "tokoro da1 'place'": 495,
+  "tokoro da2 'moment'": 496,
+  "toku <oku>": 358,
+  "~to shite": 501,
+  "~to shite wa": 502,
+  "tsumori": 503,
+  "ttara <~to ieba>": 484,
+  "-tte1 'speaking of'": 507,
+  "-tte2 [quote marker]": 510,
+
+  "uchi ni": 512,
+  "ushiro ni <mae ni>": 231,
+
+  "wa1 [theme]": 516,
+  "wa2 [female speech marker]": 520,
+  "~wa ~da": 521,
+  "~wa ~desu <~wa ~da>": 521,
+  "~wa ~ga": 525,
+  "~wa ikenai": 528,
+  "wakaru": 529,
+
+  "wake da": 531,
+  "~wa naranai <~wa ikenai>": 528,
+  "wazawaza <sekkaku>": 392,
+  "wazuka <sukuna>": 427,
+
+  "-ya 'store'": 535,
+  "ya 'and'": 536,
+  "yahari": 538,
+  "yappari <yahari>": 539,
+  "yaru <ageru1, suru1>": 64,
+  "yaru <ageru1, suru1>": 428,
+  "-yasui": 541,
+  "yo": 543,
+  "youda": 547,
+  "yo ne <ne>": 288,
+  "youni1 'so that ~'": 553,
+  "youni2 'like'": 554,
+  "~youni iu": 556,
+  "~youni naru": 559,
+  "~youni suru": 562,
+  "yori1 'than'": 564,
+  "yori2 'side'": 567,
+  "~you to omou": 569,
+  "~you to suru <miru>": 246,
+
+  "zenzen <amar>": 72,
+  "~zu ni <~nai de>": 271,
+  "zutsu": 572
+}
+`)
+
+function Search(e) {
+
+  const searchValue = e.target.value
+
+  const list = document.getElementById('results-container')
+  list.textContent = ''
+
+  for (let content in toc) {
+    if (!content.includes(searchValue)) {
+      continue
+    }
+    // TODO: Add an on-click element to change the displayed image.
+    const listItem = document.createElement('li')
+    listItem.textContent = content
+    const pageNumber = toc[content]
+    const imageName = `i-${(pageNumber + 12).toString().padStart(3, '0')}.jpg`
+    listItem.addEventListener('click', function() {document.getElementById('page').src = imageName})
+    list.appendChild(listItem)
+  }
+
+}
+
+function CurrentPageNumber() {
+
+  const pathToImage = document.getElementById('page').src
+  if (-1 == pathToImage.lastIndexOf('-')) {
+    return 0
+  }
+  const imageNumber = parseInt(pathToImage.substr(pathToImage.lastIndexOf('-') + 1, 3))
+  return imageNumber
+
+}
+
+function ChangePage(newPageNumber) {
+
+  const pageImage = document.getElementById('page')
+
+  oldPageNumber = CurrentPageNumber()
+  pageImage.src = pageImage.src.replace(
+    oldPageNumber.toString().padStart(3, '0'),
+    newPageNumber.toString().padStart(3, '0'))
+
+}
+
+function PreviousPage() {
+
+  ChangePage(CurrentPageNumber() - 1)
+
+}
+
+function NextPage() {
+
+  ChangePage(CurrentPageNumber() + 1)
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<div id="search-container" style="border: solid thin gray;">
+Search: <input type="search" id="search-input" autofocus placeholder="search...">
+<ul id="results-container"></ul>
+</div>
+
+<div id="image-container" style="border: solid thin gray" style="position: relative;">
+<div id="previous-page" style="position: absolute; width: 50%; top: 0; height: 49%;" onclick="PreviousPage()"></div>
+<img id="page" src="cover.jpg" height="100%"/>
+<div id="next-page" style="position: absolute; width: 50%; bottom: 0; height: 49%;" onclick="NextPage()"></div>
+</div>
+
+<script>
+document.getElementById('search-input').addEventListener('input', Search)
+</script>
+
+</body>
+
+</html>
