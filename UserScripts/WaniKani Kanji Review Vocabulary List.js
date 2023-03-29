@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         WaniKani Kanji Review Vocabulary List
 // @namespace    http://kurifuri.com/
-// @version      0.5.4
+// @version      0.6.0
 // @description  Displays vocabulary words when reviewing kanji on WaniKani.
 // @author       Christopher Fritz
-// @match        https://www.wanikani.com/review/session
+// @match        https://www.wanikani.com/subjects/review
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // ==/UserScript==
 
@@ -54,9 +54,15 @@
         wkof.ItemData.get_items(item_config).then(process_items);
     }
 
+    function load_subjects_from_queue()
+    {
+        const subjects_json = document.querySelector('script[data-quiz-queue-target=subjects]').innerHTML;
+        const subjects = JSON.parse(subjects_json)
+        return subjects
+    }
+
     function process_items(items)
     {
-
         // Index the 'items' array by item_type.
         var type_index = wkof.ItemData.get_index(items, 'item_type');
         var kan = type_index.kanji;
@@ -65,49 +71,55 @@
         var kanji_by_name = wkof.ItemData.get_index(kan, 'slug');
         var voc_by_sid = wkof.ItemData.get_index(voc, 'subject_id');
 
-        let character_element = document.getElementById("character");
+        const character_element = document.querySelector('div[data-quiz-header-target=characters]');
+        // Leave if this isn't kanji.
+        if (!character_element.parentNode.parentNode.classList.contains('character-header--kanji')) {
+            return;
+        }
+
+        const character = character_element.textContent;
 
         // Get the element where vocabulary words are shown.
         let vocabulary_element = document.getElementById('vocabulary_list');
         if (vocabulary_element == null || vocabulary_element.value == '') {
             // If the element does not exist yet, create it.
-            vocabulary_element = document.createElement("div");
-            vocabulary_element.id = "vocabulary_list";
-            character_element.parentNode.insertBefore(vocabulary_element, character_element.nextSibling);
+            vocabulary_element = document.createElement('div');
+            vocabulary_element.id = 'vocabulary_list';
+            const quiz_element = document.querySelector('div[class=quiz]');
+            quiz_element.parentNode.insertBefore(vocabulary_element, quiz_element);
         }
 
-        // Leave if this isn't kanji.
-        if (!character_element.classList.contains("kanji")) {
+        const question_type = document.querySelector('span[data-quiz-input-target=questionType]').textContent;
+        if ('meaning' == question_type && !SHOW_FOR_MEANING_REVIEW) {
             return;
         }
 
-        if (document.getElementById('question-type').classList.contains("meaning") && !SHOW_FOR_MEANING_REVIEW) {
+        const subjects = load_subjects_from_queue();
+        const current_item = subjects.find(s => { return 'Kanji' == s.type && character == s.characters});
+        if (undefined == current_item) {
             return;
         }
 
-        let reading_type = $.jStorage.get('currentItem').emph;
-        let is_reading_review = document.getElementById('question-type').classList.contains("reading");
+        let reading_type = current_item.primary_reading_type;
+        let is_reading_review = 'reading' == question_type;
         if (is_reading_review) {
             if (!SHOW_FOR_READING_REVIEW) {
                 return;
             }
             if (!SHOW_FOR_KUNYOMI && 'kunyomi' === reading_type) {
-                console.log("Skipping kunyomi.");
                 return;
             }
             if (!SHOW_FOR_ONYOMI && 'onyomi' === reading_type) {
-                console.log("Skipping onyomi.");
                 return;
             }
             if (!SHOW_FOR_NANORI && 'nanori' === reading_type) {
-                console.log("Skipping nanori.");
                 return;
             }
         }
 
         // Get the current review's kanji.
         //let current_kanji = character_element.innerText;
-        let current_kanji = $.jStorage.get('currentItem').kan;
+        let current_kanji = current_item.characters;
         // Get the subject ID's for this kanji's vocabulary.
         if (null == kanji_by_name[current_kanji]) { return; }
         let vocabulary_sids = kanji_by_name[current_kanji].data.amalgamation_subject_ids;
@@ -115,7 +127,8 @@
         let vocabulary_words = [];
 
         vocabulary_words.push('<style type="text/css">');
-        vocabulary_words.push('#vocabulary_list span {padding: 0.5em 0.75em; font-size: 3em; word-break: keep-all}');
+        vocabulary_words.push('#vocabulary_list {padding: 0.5em; text-align: center;}');
+        vocabulary_words.push('#vocabulary_list span {padding: 0.5em 0.75em; font-size: 3em; word-break: keep-all;}');
         if (BLUR_VOCABULARY_LIST) {
             vocabulary_words.push('#vocabulary_list span {color: transparent; text-shadow: 0 0 32px rgba(0,0,0,0.5);}');
             vocabulary_words.push('#vocabulary_list:hover span {color: inherit; text-shadow: none;}');
@@ -170,7 +183,7 @@
     }
 
     // Set up an observer on the character div.  When observing the text changing, update the vocabulary list.
-    var target = document.getElementById('character');
+    var target = document.querySelector('div[data-quiz-header-target=characters]');
     var observer = new MutationObserver(function(mutations) {
         clear_vocabulary();
         fetch_items();
