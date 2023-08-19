@@ -54,7 +54,7 @@
                 settings.match_vocab_reading_to_kanji_answer = old_settings.match_vocabulary_reading_to_kanji_answer;
                 settings.max_vocab_to_show = old_settings.max_vocabulary_to_show;
                 settings.show_locked_vocabulary = old_settings.show_locked_vocabulary;
-                settings.blue_vocab_list = old_settings.blue_vocabulary_list;
+                settings.blur_vocab_list = old_settings.blur_vocabulary_list;
 
                 wkof.Settings.save('wkkrvl');
             }
@@ -166,7 +166,7 @@
         }
 
         const question_type = document.querySelector('span[data-quiz-input-target=questionType]').textContent;
-        if (question_type ==='meaning' && !settings.show_for_meaning_review) {
+        if (question_type === 'meaning' && !settings.show_for_meaning_review) {
             return;
         }
 
@@ -240,7 +240,7 @@
 
     function clear_vocabulary() {
         let vocabulary_element = document.getElementById('kf-wkkrvl-vocabulary-list');
-        if (vocabulary_element !== null) {
+        if (vocabulary_element != null) {
             // Clear out any old vocabulary words.
             vocabulary_element.innerHTML = "";
         }
