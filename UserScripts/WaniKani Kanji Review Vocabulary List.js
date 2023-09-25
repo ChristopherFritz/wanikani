@@ -235,7 +235,7 @@
     // shares the reading WaniKani expects to be entered for the kanji reading, as some vocabulary words use a
     // dakuten version of the reading.
     function remove_dakuten(input) {
-        return input.normalize('NFD').replace('\u3099', '').replace('\u309A', '');
+        return input.normalize('NFD').replaceAll('\u3099', '').replaceAll('\u309A', '');
     }
 
     function clear_vocabulary() {
