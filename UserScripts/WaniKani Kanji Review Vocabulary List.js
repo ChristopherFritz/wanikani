@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WaniKani Kanji Review Vocabulary List
 // @namespace    http://kurifuri.com/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Displays vocabulary words when reviewing kanji on WaniKani.
 // @author       Christopher Fritz
 // @match        https://www.wanikani.com/subjects/review
@@ -70,17 +70,17 @@
                 tabs: {type: 'tabset', content: {
                     pgMain: {type: 'page', label: 'Options', hover_tip: 'Settings for the script.', content: {
                         grpReviewTypes: {type: 'group', label: 'Show Vocabulary Words', content: {
-                            show_for_meaning_review: {type: 'checkbox', label: 'For Meaning Questions', default: true, hover_tip: 'Shows vocabulary list under review questions where you are asked to give the meaning if true.'},
-                            show_for_reading_review: {type: 'checkbox', label: 'For Reading Questions', default: true, hover_tip: 'Shows vocabulary list under review questions where you are asked to give the reading if true.'},
-                            show_for_kunyomi: {type: 'checkbox', label: 'For Kunyomi', default: true, hover_tip: 'Shows vocabulary that use the kunyomi reading if true.'},
-                            show_for_onyomi: {type: 'checkbox', label: 'For Onyomi', default: true, hover_tip: 'Shows vocabulary that use the onyomi reading if true.'},
-                            show_for_nanori: {type: 'checkbox', label: 'For Nanori', default: true, hover_tip: 'Shows vocabulary that use the nanori reading if true.'}
+                            show_for_meaning_review: {type: 'checkbox', label: 'For Meaning Questions', default: true, hover_tip: 'Show vocabulary list under review questions when asked to give the meaning.'},
+                            show_for_reading_review: {type: 'checkbox', label: 'For Reading Questions', default: true, hover_tip: 'Show vocabulary list under review questions when asked to give the reading.'},
+                            show_for_kunyomi: {type: 'checkbox', label: 'For Kunyomi', default: true, hover_tip: 'Show vocabulary using the kunyomi reading.'},
+                            show_for_onyomi: {type: 'checkbox', label: 'For Onyomi', default: true, hover_tip: 'Show vocabulary using the onyomi reading.'},
+                            show_for_nanori: {type: 'checkbox', label: 'For Nanori', default: true, hover_tip: 'Show vocabulary using the nanori reading.'}
                         }},
                         grpAdditional: {type: 'group', label: 'Additional Settings', content: {
-                            match_vocab_reading_to_kanji_answer: {type: 'checkbox', label: 'Show vocabulary only if reading matches what WaniKani wants', default: true, hover_tip: 'If true, will only show vocabulary that use a reading that matches what WaniKani is asking for.'},
-                            max_vocab_to_show: {type: 'number', label: 'Max number of words to show', default: 10, min: 1, max: 100, hover_tip: 'The maximum number of vocabulary words to show when the list is displayed. Between 1 and 100.'},
-                            show_locked_vocabulary: {type: 'checkbox', label: 'Show Locked Vocabulary', default: true, hover_tip: 'If true will show vocabulary words that you have not unlocked yet.'},
-                            blur_vocab_list: {type: 'checkbox', label: 'Blur the vocabulary list', default: false, hover_tip: 'If true will blur all of the vocabulary until you hover over the list.'}
+                            match_vocab_reading_to_kanji_answer: {type: 'checkbox', label: 'Limit Vocabulary to Reading WaniKani Wants', default: true, hover_tip: 'Show only vocabulary that uses the reading WaniKani is asking for.'},
+                            max_vocab_to_show: {type: 'number', label: 'Max Number of Vocabulary Words', default: 10, min: 1, max: 100, hover_tip: 'The maximum number of vocabulary words to show when the list is displayed. Between 1 and 100.'},
+                            show_locked_vocabulary: {type: 'checkbox', label: 'Show Locked Vocabulary', default: true, hover_tip: 'Shows vocabulary words that you have not unlocked yet.'},
+                            blur_vocab_list: {type: 'checkbox', label: 'Blur Vocabulary List', default: false, hover_tip: 'Blurs vocabulary words until you hover over the list.'}
                         }}
                     }}
                 }}
