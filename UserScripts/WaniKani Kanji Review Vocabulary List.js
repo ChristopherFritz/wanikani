@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WaniKani Kanji Review Vocabulary List
 // @namespace    http://kurifuri.com/
-// @version      1.1.1
+// @version      1.2.0
 // @description  Displays vocabulary words when reviewing kanji on WaniKani.
 // @author       Christopher Fritz
 // @match        https://www.wanikani.com/subjects/review
