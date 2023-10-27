@@ -251,7 +251,7 @@
         return input.normalize('NFD').replaceAll('\u3099', '').replaceAll('\u309A', '');
     }
 
-	// Function comes from WaniKani userscript, ConfusionGuesser, by Sinyaven and licensed under MIT-0
+    // Function comes from WaniKani userscript, ConfusionGuesser, by Sinyaven and licensed under MIT-0
     function apply_gemination(reading) {
         let replacementGemination = "ちつくき".includes(reading.substr(-1));
 		return replacementGemination ? reading.substr(0, reading.length - 1) + "っ" : reading + "っ";
