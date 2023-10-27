@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WaniKani Kanji Review Vocabulary List
 // @namespace    http://kurifuri.com/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Displays vocabulary words when reviewing kanji on WaniKani.
 // @author       Christopher Fritz
 // @match        https://www.wanikani.com/subjects/review
@@ -28,7 +28,7 @@
             show_for_onyomi: true,
             show_for_nanori: true,
             match_vocab_reading_to_kanji_answer: true,
-            match_geminated_readings: false,
+            match_geminated_readings: true,
             max_vocab_to_show: 10,
             show_locked_vocabulary: true,
             blur_vocab_list: false
