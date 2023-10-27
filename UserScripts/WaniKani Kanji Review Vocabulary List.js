@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WaniKani Kanji Review Vocabulary List
 // @namespace    http://kurifuri.com/
-// @version      1.1.1
+// @version      1.2.0
 // @description  Displays vocabulary words when reviewing kanji on WaniKani.
 // @author       Christopher Fritz
 // @match        https://www.wanikani.com/subjects/review
@@ -28,6 +28,7 @@
             show_for_onyomi: true,
             show_for_nanori: true,
             match_vocab_reading_to_kanji_answer: true,
+			match_geminated_readings: false,
             max_vocab_to_show: 10,
             show_locked_vocabulary: true,
             blur_vocab_list: false
@@ -78,6 +79,7 @@
                         }},
                         grpAdditional: {type: 'group', label: 'Additional Settings', content: {
                             match_vocab_reading_to_kanji_answer: {type: 'checkbox', label: 'Limit Vocabulary to Reading WaniKani Wants', default: true, hover_tip: 'Show only vocabulary that uses the reading WaniKani is asking for.'},
+							match_geminated_readings: {type: 'checkbox', label: 'Include Vocabulary whose reading matches a geminated variant', default: false, hover_tip: 'Include vocabulary matches for geminated readings, e.g. how 学（がく）changes to がっ in 学校.'},
                             max_vocab_to_show: {type: 'number', label: 'Max Number of Vocabulary Words', default: 10, min: 1, max: 100, hover_tip: 'The maximum number of vocabulary words to show when the list is displayed. Between 1 and 100.'},
                             show_locked_vocabulary: {type: 'checkbox', label: 'Show Locked Vocabulary', default: true, hover_tip: 'Shows vocabulary words that you have not unlocked yet.'},
                             blur_vocab_list: {type: 'checkbox', label: 'Blur Vocabulary List', default: false, hover_tip: 'Blurs vocabulary words until you hover over the list.'}
@@ -222,8 +224,19 @@
             if (kanji_reading.type !== reading_type) {continue;}
 
             let no_dakuten_kanji_reading = remove_dakuten(kanji_reading.reading);
+			let geminated_kanji_reading = apply_gemination(kanji_reading.reading);
             for (const vocabulary_reading of vocabulary.data.readings) {
+				// check for rendaku (initial mora changes to voiced variation)
+                // also checks for rare instance where a voiced mora devoices in the vocabulary (e.g. 自（じ）changes to し in 自然（しぜん）)
+                // a downside to this is if the kanji reading is different but still included in the vocabulary reading it will match
+                // e.g. 仮 has an on'yomi か but a kun'yomi of かり. These are not matches but the below will treat them as a match
+                // or if the reading appears in the vocab due to the reading of another kanji being the same (or the same w/o dakuten)
                 if (remove_dakuten(vocabulary_reading.reading).includes(no_dakuten_kanji_reading)) {
+                    return true;
+                }
+
+				// check for gemination (final mora changes to っ or っ is added on)
+                if (settings.match_geminated_readings && vocabulary_reading.reading.includes(geminated_kanji_reading)) {
                     return true;
                 }
             }
@@ -236,6 +249,12 @@
     // dakuten version of the reading.
     function remove_dakuten(input) {
         return input.normalize('NFD').replaceAll('\u3099', '').replaceAll('\u309A', '');
+    }
+
+	// Function comes from WaniKani userscript, ConfusionGuesser, by Sinyaven and licensed under MIT-0
+    function apply_gemination(reading) {
+        let replacementGemination = "ちつくき".includes(reading.substr(-1));
+		return replacementGemination ? reading.substr(0, reading.length - 1) + "っ" : reading + "っ";
     }
 
     function clear_vocabulary() {
