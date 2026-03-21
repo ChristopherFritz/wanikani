@@ -1,7 +1,15 @@
+const STORAGE_KEY = 'mokuro_indexes'
+const TEXT_BOX_SELECTOR = 'div.textBox'
+const PAGE_SELECTOR = 'div.page'
+const PENDING_TEXT_BOX_SELECTOR = `${TEXT_BOX_SELECTOR}.pending`
+const DONE_TEXT_BOX_SELECTOR = `${TEXT_BOX_SELECTOR}.done`
+const NEXT_TEXT_BOX_SELECTOR = `${TEXT_BOX_SELECTOR}.next`
+const ACTIVE_PAGE_SELECTOR = `${PAGE_SELECTOR}[style="display: inline-block; order: 2;"]`
+
 function addStyleSheet() {
 
     const styles = `
-        div.textbox::after
+        div.textBox::after
         {
             font-size: 1.5em;
             content : attr(data-number-on-page);
@@ -14,7 +22,7 @@ function addStyleSheet() {
             top: -2em;
         }
 
-        div.textbox.next {
+        div.textBox.next {
             border-color: green !important;
         }
         `
@@ -27,13 +35,35 @@ function addStyleSheet() {
 
 function updateLocalStorage(storedIndexes) {
 
-    localStorage.setItem('mokuro_indexes', JSON.stringify(storedIndexes))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storedIndexes))
 
 }
 
 function clearLocalStorage(storedIndexes) {
 
-    localStorage.deleteItem('mokuro_indexes')
+    localStorage.removeItem(STORAGE_KEY)
+
+}
+
+function getStoredTextBoxes() {
+
+    const restoredIndexes = []
+    const restoredTextBoxes = []
+
+    for (let storedIndex of storedIndexes) {
+        const textBox = document.querySelector(`${TEXT_BOX_SELECTOR}[data-index-number="${storedIndex}"]`)
+        if (null == textBox) {
+            continue
+        }
+
+        restoredIndexes.push(storedIndex)
+        restoredTextBoxes.push(textBox)
+    }
+
+    storedIndexes = restoredIndexes
+    updateLocalStorage(storedIndexes)
+
+    return restoredTextBoxes
 
 }
 
@@ -43,12 +73,15 @@ function saveLocalStorageToFile() {
 
     let output = {}
 
-    for (let storedIndex of storedIndexes) {
+    for (let textBox of getStoredTextBoxes()) {
 
-        const textBox = document.querySelector(`div.textBox[data-index-number="${storedIndex}"]`)
+        const page = textBox.closest(PAGE_SELECTOR)
+        if (null == page) {
+            continue
+        }
 
         // Get the page number.
-        const pageNumber = textBox.parentNode.parentNode.id.replace('page', '')
+        const pageNumber = page.id.replace('page', '')
 
         if (!(pageNumber in output)) {
             output[pageNumber] = ''
@@ -98,6 +131,37 @@ function storeTextBox(textBox) {
 
 }
 
+function syncNextTextBox(page) {
+
+    const nextTextBoxes = page.querySelectorAll(NEXT_TEXT_BOX_SELECTOR)
+    for (let nextTextBox of nextTextBoxes) {
+        nextTextBox.classList.remove('next')
+    }
+
+    const nextPendingTextBox = page.querySelector(PENDING_TEXT_BOX_SELECTOR)
+    if (null != nextPendingTextBox) {
+        nextPendingTextBox.classList.add('next')
+    }
+
+}
+
+function restoreStoredTextBoxes() {
+
+    for (let textBox of getStoredTextBoxes()) {
+        clickedElements.push(textBox)
+
+        textBox.style.display = 'none'
+        textBox.classList.add('done')
+        textBox.classList.remove('pending')
+        textBox.classList.remove('next')
+    }
+
+    for (let page of pages) {
+        syncNextTextBox(page)
+    }
+
+}
+
 function undoLastTextBox() {
 
     if (0 === storedIndexes.length) {
@@ -111,30 +175,35 @@ function undoLastTextBox() {
     textBox.classList.remove('done')
     textBox.classList.add('pending')
 
+    updateLocalStorage(storedIndexes)
+
+    const page = textBox.closest(PAGE_SELECTOR)
+    if (null != page) {
+        syncNextTextBox(page)
+    }
+
 }
 
 function tryToChangePage(e) {
 
     const page = e.target
 
-    const textBoxes = page.querySelectorAll('div.textBox:not(.done)')
+    const textBoxes = page.querySelectorAll(`${TEXT_BOX_SELECTOR}:not(.done)`)
     if (0 === textBoxes.length) {
         inputLeft()
     }
 
 }
 
-let storedIndexes = JSON.parse(localStorage.getItem('mokuro_indexes')) || []
+let storedIndexes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []
 
 let clickedElements = []
 
 addStyleSheet()
 
-const textBoxes = document.querySelectorAll('div.textBox')
+const textBoxes = document.querySelectorAll(TEXT_BOX_SELECTOR)
 
 let indexNumber = 0
-
-// TODO: Implement loading local storage and matching DIVs as already added for stored indexes.
 
 for (let textBox of textBoxes) {
 
@@ -142,10 +211,8 @@ for (let textBox of textBoxes) {
     textBox.dataset.indexNumber = indexNumber
 
     // Style the textbox.
-    //textBox.style.backgroundColor = 'yellow'
     textBox.style.border = '5px solid red'
-    //textBox.style.opacity = 0.5
-
+    
     // Hide the P's.
     const paragraphs = textBox.querySelectorAll('p')
     for (let paragraph of paragraphs) {
@@ -158,25 +225,24 @@ for (let textBox of textBoxes) {
 }
 
 // When the mouse moves off the page, check whether to move to the next page.
-const pages = document.querySelectorAll('div.page')
+const pages = document.querySelectorAll(PAGE_SELECTOR)
 for (let page of pages) {
     page.addEventListener('mouseleave', tryToChangePage)
 
     // Add a per-page number to each textbox on the page.
-    const pageTextBoxes = page.querySelectorAll('div.textbox')
-    //const boxCount = pageTextBoxes.length
-    //const padding = (''+boxCount).length
+    const pageTextBoxes = page.querySelectorAll(TEXT_BOX_SELECTOR)
     let boxNumber = 0
     for (let pageTextBox of pageTextBoxes) {
         boxNumber += 1
 
-        pageTextBox.dataset.numberOnPage = (''+boxNumber) //.padStart(padding, '0')
+        pageTextBox.dataset.numberOnPage = (''+boxNumber)
         pageTextBox.classList.add('pending')
-        if (1== boxNumber) {
-            pageTextBox.classList.add('next')
-        }
     }
+
+    syncNextTextBox(page)
 }
+
+restoreStoredTextBoxes()
 
 let numbers = ''
 
@@ -203,43 +269,41 @@ document.addEventListener("keydown", function onEvent(e) {
         return
     }
 
-    const currentPage = document.querySelector('div.page[style="display: inline-block; order: 2;"]')
+    const currentPage = document.querySelector(ACTIVE_PAGE_SELECTOR)
 
-    const allTextBoxes = currentPage.querySelectorAll('div.textBox')
-    const pendingTextBoxes = currentPage.querySelectorAll('div.textBox.pending')
-    const doneTextBoxes = currentPage.querySelectorAll('div.textBox.done')
+    const allTextBoxes = currentPage.querySelectorAll(TEXT_BOX_SELECTOR)
+    const pendingTextBoxes = currentPage.querySelectorAll(PENDING_TEXT_BOX_SELECTOR)
+    const doneTextBoxes = currentPage.querySelectorAll(DONE_TEXT_BOX_SELECTOR)
 
     if ('0' == numbers) {
-        const nextTextBox = currentPage.querySelector('div.textBox.next')
+        const nextTextBox = currentPage.querySelector(NEXT_TEXT_BOX_SELECTOR)
         if (null != nextTextBox) {
             storeTextBox(nextTextBox)
         }
     }
     else {
         if ('1' == numbers && 10 <= allTextBoxes.length) {
-            const pageOneDone = 0 < currentPage.querySelectorAll('div.textBox.done[data-number-on-page="1"]').length
+            const pageOneDone = 0 < currentPage.querySelectorAll(`${DONE_TEXT_BOX_SELECTOR}[data-number-on-page="1"]`).length
             if (pageOneDone) {
                 // Dialogue box 1 has already been selected.  This must be a teen.
                 return
             }
-            const donePagesCount = currentPage.querySelectorAll('div.textBox.done').length
+            const donePagesCount = currentPage.querySelectorAll(DONE_TEXT_BOX_SELECTOR).length
             if (3 < donePagesCount) {
                 // Chances are box 1 was skipped over intentionally, and this is part of 10 or higher.
                 return
             }
         }
-        const textBoxToSelect = currentPage.querySelector(`div.textBox[data-number-on-page="${numbers}"]`)
+        const textBoxToSelect = currentPage.querySelector(`${PENDING_TEXT_BOX_SELECTOR}[data-number-on-page="${numbers}"]`)
         if (null != textBoxToSelect) {
             storeTextBox(textBoxToSelect)
         }
     }
 
     // If the "next" box was selected, then mark the next "next" box.
-    const nextNextTextBox = currentPage.querySelector('div.textBox.pending')
+    const nextNextTextBox = currentPage.querySelector(PENDING_TEXT_BOX_SELECTOR)
     if (null != nextNextTextBox) {
-        console.log("Adding next.")
         nextNextTextBox.classList.add('next')
-        console.log(nextNextTextBox)
     }
 
     numbers = ''
