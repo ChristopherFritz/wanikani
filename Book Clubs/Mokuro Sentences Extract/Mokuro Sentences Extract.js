@@ -25,9 +25,15 @@ function addStyleSheet() {
 }
 
 
-function updateLocalStorage() {
+function updateLocalStorage(storedIndexes) {
 
-    // TODO: Implement this.
+    localStorage.setItem('mokuro_indexes', JSON.stringify(storedIndexes))
+
+}
+
+function clearLocalStorage(storedIndexes) {
+
+    localStorage.deleteItem('mokuro_indexes')
 
 }
 
@@ -82,7 +88,7 @@ function storeTextBox(textBox) {
 
     storedIndexes.push(textBox.dataset.indexNumber)
     clickedElements.push(textBox)
-    updateLocalStorage()
+    updateLocalStorage(storedIndexes)
 
     textBox.style.display = 'none'
     // Add a style so querySelector can know this one is "done".
@@ -118,7 +124,8 @@ function tryToChangePage(e) {
 
 }
 
-let storedIndexes = []
+let storedIndexes = JSON.parse(localStorage.getItem('mokuro_indexes')) || []
+
 let clickedElements = []
 
 addStyleSheet()
