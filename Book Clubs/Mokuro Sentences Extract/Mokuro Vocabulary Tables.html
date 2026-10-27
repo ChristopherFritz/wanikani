@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Mokuro Vocabulary Tables</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --ink: #20352f;
+      --subtle: #586b64;
+      --line: #d6e1db;
+      --panel: #f4f8f5;
+      --accent: #21644f;
+      --accent-soft: #e4f2e9;
+      --error: #ad302b;
+      --error-bg: #fff0ee;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: transparent;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-size: 15px; line-height: 1.55; }
+    main { max-width: 1160px; margin: 0 auto; padding: 36px 24px 64px; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.2; letter-spacing: -0.035em; }
+    h2 { font-size: 20px; letter-spacing: -0.02em; }
+    .eyebrow { margin-bottom: 8px; color: var(--accent); font-size: 12px; font-weight: 750; letter-spacing: 0.12em; }
+    .drop-zone {
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      border: 2px dashed var(--line); border-radius: 12px; padding: 24px;
+      background: var(--panel); transition: border-color 120ms, background 120ms;
+    }
+    body.dragging .drop-zone { border-color: var(--accent); background: var(--accent-soft); }
+    .drop-title { display: block; font-size: 18px; font-weight: 700; }
+    .hint { color: var(--subtle); font-size: 13px; }
+    .drop-zone .hint { margin-top: 5px; }
+    button, input, textarea { font: inherit; }
+    button {
+      flex-shrink: 0; border: 1px solid var(--accent); border-radius: 7px;
+      background: var(--accent); color: #fff; padding: 10px 18px;
+      font-weight: 650; cursor: pointer;
+    }
+    button:hover { filter: brightness(1.1); }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .file-status { margin: 10px 0 28px; overflow-wrap: anywhere; }
+    .settings { display: grid; grid-template-columns: minmax(190px, 1fr) 2fr; gap: 24px; }
+    label { display: block; margin-bottom: 7px; font-weight: 650; }
+    input, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 7px;
+      background: transparent; color: var(--ink); padding: 10px 12px;
+    }
+    input { max-width: 180px; }
+    textarea { resize: vertical; min-height: 78px; }
+    input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--error); }
+    .settings .hint { margin-top: 7px; }
+    .error { margin-top: 8px; color: var(--error); font-size: 13px; }
+    .file-error { border-radius: 7px; background: var(--error-bg); padding: 12px 16px; margin-bottom: 20px; }
+    .rules { color: var(--subtle); font-size: 13px; margin-top: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+    .summary { margin: 22px 0; font-size: 14px; color: var(--subtle); }
+    .copy-controls { margin-bottom: 20px; }
+    .copy-links { display: flex; flex-wrap: wrap; gap: 4px 18px; list-style: none; margin: 5px 0 0; padding: 0; }
+    .copy-week {
+      border: 0; border-radius: 2px; padding: 4px 0; background: transparent;
+      color: var(--accent); text-decoration: underline; text-underline-offset: 3px;
+    }
+    .copy-week:hover { filter: none; text-decoration-thickness: 2px; }
+    #copy-status { margin-top: 8px; }
+    .empty { padding: 32px 20px; text-align: center; border-radius: 10px; background: var(--panel); color: var(--subtle); }
+    .week { margin-top: 28px; }
+    .week-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .range { font-weight: 400; color: var(--subtle); font-size: 14px; margin-left: 12px; letter-spacing: normal; }
+    .count { color: var(--accent); font-size: 13px; font-weight: 650; white-space: nowrap; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 9px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: var(--panel); font-size: 12px; font-weight: 650; color: var(--subtle); white-space: nowrap; }
+    th, td { padding: 11px 14px; vertical-align: top; border-bottom: 1px solid var(--line); }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: var(--panel); }
+    td[lang="ja"] { font-size: 16px; min-width: 100px; overflow-wrap: anywhere; }
+    td:first-child { font-weight: 600; }
+    .meaning { min-width: 220px; overflow-wrap: anywhere; }
+    .number { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .pos { color: var(--subtle); font-size: 12px; overflow-wrap: anywhere; }
+    [hidden] { display: none !important; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #e3eee7; --subtle: #a9bdb0; --line: #3b5145; --panel: #202e26;
+        --accent: #367b5c; --accent-soft: #243e30; --error: #ffaaa2; --error-bg: #402b28;
+      }
+      .eyebrow, .count, .copy-week { color: #9bdbb6; }
+    }
+    @media (max-width: 600px) {
+      main { padding: 24px 16px 40px; }
+      .drop-zone { align-items: flex-start; flex-direction: column; gap: 16px; padding: 20px; }
+      .settings { grid-template-columns: 1fr; gap: 20px; }
+      .week-header { align-items: flex-start; }
+      .range { display: block; margin: 3px 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">MOKURO / ICHIRAN</p>
+      <h1>Vocabulary tables</h1>
+    </header>
+
+    <section class="drop-zone" aria-label="Load vocabulary file">
+      <div>
+        <span class="drop-title">Drop your vocabulary .txt file here</span>
+        <p class="hint">Use the text file created by Mokuro Sentences Ichiran Extract.py.</p>
+      </div>
+      <button id="choose-file" type="button">Choose file</button>
+      <input id="file-input" type="file" accept=".txt,.tsv,text/plain,text/tab-separated-values" hidden>
+    </section>
+    <p id="file-status" class="file-status hint" role="status">No file loaded.</p>
+    <p id="file-error" class="file-error error" role="alert" hidden></p>
+
+    <section class="settings" aria-label="Table settings">
+      <div>
+        <label for="page-modifier">Page number modifier</label>
+        <input id="page-modifier" type="number" step="1" value="0" required aria-describedby="modifier-hint modifier-error">
+        <p id="modifier-hint" class="hint">Added to every page. For example, −2 changes page 7 to page 5.</p>
+        <p id="modifier-error" class="error" role="alert" hidden></p>
+      </div>
+      <div>
+        <label for="week-starts">Weekly start pages (optional)</label>
+        <textarea id="week-starts" rows="2" placeholder="3, 15, 29" spellcheck="false" aria-describedby="weeks-hint weeks-error"></textarea>
+        <p id="weeks-hint" class="hint">Use the adjusted page numbers, separated by commas or line breaks, in increasing order. Empty entries and numbers at or below the last accepted start are ignored. Leave blank for one table covering all pages.</p>
+        <p id="weeks-error" class="error" role="alert" hidden></p>
+      </div>
+    </section>
+    <p class="rules">Pages before the first weekly start are ignored. Words are matched by the Word column; only the first occurrence within each week is kept. A word can appear again in another week.</p>
+
+    <p id="summary" class="summary" role="status"></p>
+    <div id="copy-controls" class="copy-controls" hidden>
+      <p id="copy-label" class="hint">Copy a week to clipboard:</p>
+      <ul id="copy-links" class="copy-links" aria-labelledby="copy-label"></ul>
+      <p id="copy-status" class="hint" role="status" hidden></p>
+    </div>
+    <div id="results"><p class="empty">Load a file to see your vocabulary tables.</p></div>
+  </main>
+
+  <script>
+    "use strict";
+
+    const fileInput = document.getElementById("file-input");
+    const fileStatus = document.getElementById("file-status");
+    const fileError = document.getElementById("file-error");
+    const modifierInput = document.getElementById("page-modifier");
+    const startsInput = document.getElementById("week-starts");
+    const summary = document.getElementById("summary");
+    const copyControls = document.getElementById("copy-controls");
+    const copyLinks = document.getElementById("copy-links");
+    const copyStatus = document.getElementById("copy-status");
+    const results = document.getElementById("results");
+    let entries = [];
+    let hasFile = false;
+    let loadVersion = 0;
+
+    function integer(value) {
+      return /^[+-]?\d+$/.test(value) && Number.isSafeInteger(Number(value));
+    }
+
+    function parseVocabulary(text) {
+      const rows = [];
+      const problems = [];
+      text.replace(/^\uFEFF/, "").split(/\r\n?|\n/).forEach((line, index) => {
+        if (!line.trim()) return;
+        const fields = line.split("\t").map(field => field.trim());
+        if (fields.length !== 6) {
+          problems.push(`Line ${index + 1}: expected 6 tab-separated columns, found ${fields.length}.`);
+        } else if (!fields[0]) {
+          problems.push(`Line ${index + 1}: the word is missing.`);
+        } else if (!integer(fields[4]) || Number(fields[4]) < 1 || !integer(fields[5])) {
+          problems.push(`Line ${index + 1}: row number must be a positive integer and page number must be an integer.`);
+        } else {
+          rows.push({
+            word: fields[0], kana: fields[1], pos: fields[2], meaning: fields[3],
+            sourceRow: Number(fields[4]), page: Number(fields[5]), order: index
+          });
+        }
+      });
+      if (problems.length) {
+        const extra = problems.length > 3 ? ` (${problems.length - 3} more invalid lines.)` : "";
+        throw new Error(problems.slice(0, 3).join(" ") + extra);
+      }
+      // Earliest page wins; preserve file order when entries share a page.
+      return rows.sort((a, b) => a.page - b.page || a.order - b.order);
+    }
+
+    function readWeekStarts(value) {
+      if (!value.trim()) return [];
+      const tokens = value.trim().split(/[,\s、，]+/).filter(Boolean);
+      if (tokens.some(token => !integer(token))) {
+        throw new Error("Enter whole page numbers separated by commas or line breaks, for example: 3, 15, 29.");
+      }
+      const starts = [];
+      for (const token of tokens) {
+        const start = Number(token);
+        if (!starts.length || start > starts[starts.length - 1]) starts.push(start);
+      }
+      return starts;
+    }
+
+    function groupByWeek(rows, modifier, starts) {
+      const firstPage = rows.length ? rows[0].page + modifier : 1;
+      const boundaries = starts.length ? starts : [firstPage];
+      const weeks = boundaries.map((start, index) => ({
+        start, end: boundaries[index + 1] === undefined ? null : boundaries[index + 1] - 1,
+        rows: [], seen: new Set(), duplicates: 0
+      }));
+      let weekIndex = 0;
+      let ignored = 0;
+      for (const row of rows) {
+        const page = row.page + modifier;
+        if (!Number.isSafeInteger(page)) {
+          throw new Error("The modifier makes a page number too large. Enter a smaller modifier.");
+        }
+        if (page < boundaries[0]) {
+          ignored++;
+          continue;
+        }
+        while (weekIndex + 1 < weeks.length && page >= weeks[weekIndex + 1].start) weekIndex++;
+        const week = weeks[weekIndex];
+        const key = row.word.normalize("NFC");
+        if (week.seen.has(key)) {
+          week.duplicates++;
+        } else {
+          week.seen.add(key);
+          week.rows.push({ ...row, page });
+        }
+      }
+      return { weeks, ignored };
+    }
+
+    function element(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+
+    function message(text) {
+      clearCopyControls();
+      results.replaceChildren(element("p", text, "empty"));
+    }
+
+    function clearCopyControls() {
+      copyControls.hidden = true;
+      copyLinks.replaceChildren();
+      copyStatus.textContent = "";
+      copyStatus.hidden = true;
+    }
+
+    function weekText(week) {
+      const rows = [["Vocab (Kanji)", "Vocab (Kana)", "Meaning", "Page #", "Notes"]];
+      week.rows.forEach(row => rows.push([row.word, row.kana, row.meaning, row.page, ""]));
+      return rows.map(row => row.join("\t")).join("\n");
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return;
+        } catch {
+          // Fall back when clipboard access is restricted, including for local files.
+        }
+      }
+      const focused = document.activeElement;
+      const textarea = element("textarea");
+      textarea.value = text;
+      textarea.readOnly = true;
+      textarea.setAttribute("aria-label", "Text to copy");
+      textarea.style.cssText = "position: fixed; left: -9999px; top: 0; width: 1px; height: 1px;";
+      document.body.append(textarea);
+      try {
+        textarea.focus({ preventScroll: true });
+        textarea.select();
+        if (!document.execCommand("copy")) throw new Error("Clipboard copy failed.");
+      } finally {
+        textarea.remove();
+        focused?.focus({ preventScroll: true });
+      }
+    }
+
+    function showCopyControls(weeks) {
+      weeks.forEach((week, index) => {
+        const item = element("li");
+        const button = element("button", `Week ${index + 1}`, "copy-week");
+        button.type = "button";
+        button.setAttribute("aria-label", `Copy week ${index + 1} to clipboard`);
+        let copying = false;
+        button.addEventListener("click", async () => {
+          if (copying) return;
+          copying = true;
+          copyStatus.className = "hint";
+          copyStatus.textContent = `Copying week ${index + 1}…`;
+          copyStatus.hidden = false;
+          try {
+            await copyText(weekText(week));
+            if (!button.isConnected) return;
+            copyStatus.textContent = `Copied week ${index + 1}: ${plural(week.rows.length, "entry", "entries")}.`;
+          } catch {
+            if (!button.isConnected) return;
+            copyStatus.className = "error";
+            copyStatus.textContent = `Could not copy week ${index + 1}. Check your browser’s clipboard permissions and try again.`;
+          } finally {
+            copying = false;
+          }
+        });
+        item.append(button);
+        copyLinks.append(item);
+      });
+      copyControls.hidden = false;
+    }
+
+    function fieldError(input, errorId, text) {
+      const error = document.getElementById(errorId);
+      error.textContent = text;
+      error.hidden = !text;
+      input.setAttribute("aria-invalid", text ? "true" : "false");
+    }
+
+    function plural(count, singular, pluralForm = `${singular}s`) {
+      return `${count.toLocaleString()} ${count === 1 ? singular : pluralForm}`;
+    }
+
+    function render() {
+      clearCopyControls();
+      let modifierError = "";
+      let weeksError = "";
+      let starts = [];
+      const modifierText = modifierInput.value.trim();
+      if (!integer(modifierText)) modifierError = "Enter a whole number, such as 0, −2, or 3.";
+      try { starts = readWeekStarts(startsInput.value); }
+      catch (error) { weeksError = error.message; }
+      fieldError(modifierInput, "modifier-error", modifierError);
+      fieldError(startsInput, "weeks-error", weeksError);
+      summary.textContent = "";
+      if (modifierError || weeksError) {
+        message("Fix the settings above to display your tables.");
+        return;
+      }
+      if (!hasFile) {
+        message("Load a file to see your vocabulary tables.");
+        return;
+      }
+      if (!entries.length) {
+        message("This file has no vocabulary rows.");
+        return;
+      }
+
+      let grouped;
+      try { grouped = groupByWeek(entries, Number(modifierText), starts); }
+      catch (error) {
+        fieldError(modifierInput, "modifier-error", error.message);
+        message("Fix the page modifier above to display your tables.");
+        return;
+      }
+      const { weeks, ignored } = grouped;
+      const shown = weeks.reduce((total, week) => total + week.rows.length, 0);
+      const duplicates = weeks.reduce((total, week) => total + week.duplicates, 0);
+      summary.textContent = `${plural(shown, "entry", "entries")} across ${plural(weeks.length, "week")} · ${plural(duplicates, "duplicate")} removed within weeks · ${plural(ignored, "row")} before week 1 ignored`;
+
+      const fragment = document.createDocumentFragment();
+      weeks.forEach((week, index) => {
+        const section = element("section", undefined, "week");
+        const headingId = `week-${index + 1}`;
+        section.setAttribute("aria-labelledby", headingId);
+        const header = element("div", undefined, "week-header");
+        const heading = element("h2", `Week ${index + 1}`);
+        heading.id = headingId;
+        const range = week.end === null ? `Page ${week.start} onward` : `Pages ${week.start}–${week.end}`;
+        heading.append(element("span", range, "range"));
+        const count = week.rows.length > 10 ? `First 10 of ${plural(week.rows.length, "word")}` : plural(week.rows.length, "word");
+        header.append(heading, element("span", count, "count"));
+        section.append(header);
+        const wrapper = element("div", undefined, "table-wrap");
+        wrapper.tabIndex = 0;
+        wrapper.setAttribute("role", "region");
+        wrapper.setAttribute("aria-label", `Week ${index + 1} vocabulary; scroll horizontally if needed`);
+        const table = element("table");
+        table.setAttribute("aria-labelledby", headingId);
+        const thead = element("thead");
+        const headerRow = element("tr");
+        ["Word", "Kana", "Part of speech", "Meaning", "Source row", "Page"].forEach((label, column) => {
+          const cell = element("th", label, column >= 4 ? "number" : "");
+          cell.scope = "col";
+          if (column === 4) cell.title = "Original row number from the extractor";
+          headerRow.append(cell);
+        });
+        thead.append(headerRow);
+        const tbody = element("tbody");
+        week.rows.slice(0, 10).forEach(row => {
+          const tr = element("tr");
+          [row.word, row.kana, row.pos, row.meaning, row.sourceRow, row.page].forEach((value, column) => {
+            const cell = element("td", value);
+            if (column < 2) cell.lang = "ja";
+            if (column === 2) cell.className = "pos";
+            if (column === 3) cell.className = "meaning";
+            if (column >= 4) cell.className = "number";
+            tr.append(cell);
+          });
+          tbody.append(tr);
+        });
+        if (!week.rows.length) {
+          const tr = element("tr");
+          const cell = element("td", "No vocabulary entries in this page range.", "empty");
+          cell.colSpan = 6;
+          tr.append(cell);
+          tbody.append(tr);
+        }
+        table.append(thead, tbody);
+        wrapper.append(table);
+        section.append(wrapper);
+        fragment.append(section);
+      });
+      results.replaceChildren(fragment);
+      showCopyControls(weeks);
+    }
+
+    async function loadFile(file) {
+      if (!file) return;
+      const version = ++loadVersion;
+      entries = [];
+      hasFile = false;
+      fileError.hidden = true;
+      fileError.textContent = "";
+      summary.textContent = "";
+      fileStatus.textContent = `Reading ${file.name}…`;
+      message("Reading vocabulary…");
+      try {
+        const text = await file.text();
+        if (version !== loadVersion) return;
+        entries = parseVocabulary(text);
+        hasFile = true;
+        fileStatus.textContent = `${file.name} · ${plural(entries.length, "source row")} loaded`;
+        render();
+      } catch (error) {
+        if (version !== loadVersion) return;
+        fileStatus.textContent = "No file loaded.";
+        fileError.textContent = `Could not load ${file.name}. ${error.message} Use the extractor’s UTF-8 text output: word, kana, part of speech, meaning, row number, page number (tab-separated, without a header).`;
+        fileError.hidden = false;
+        message("Choose another file or correct the file and load it again.");
+      }
+    }
+
+    document.getElementById("choose-file").addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => {
+      loadFile(fileInput.files[0]);
+      fileInput.value = "";
+    });
+    modifierInput.addEventListener("input", render);
+    startsInput.addEventListener("input", render);
+
+    // Handle drops anywhere on the page, preventing navigation to the text file.
+    let dragDepth = 0;
+    function isFileDrag(event) { return Array.from(event.dataTransfer?.types || []).includes("Files"); }
+    document.addEventListener("dragenter", event => {
+      if (!isFileDrag(event)) return;
+      event.preventDefault();
+      dragDepth++;
+      document.body.classList.add("dragging");
+    });
+    document.addEventListener("dragover", event => {
+      if (!isFileDrag(event)) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+    });
+    document.addEventListener("dragleave", () => {
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (!dragDepth) document.body.classList.remove("dragging");
+    });
+    document.addEventListener("drop", event => {
+      event.preventDefault();
+      dragDepth = 0;
+      document.body.classList.remove("dragging");
+      const files = event.dataTransfer?.files;
+      if (!files?.length) return;
+      if (files.length > 1) {
+        fileError.textContent = "Drop one vocabulary file at a time.";
+        fileError.hidden = false;
+        return;
+      }
+      loadFile(files[0]);
+    });
+  </script>
+</body>
+</html>
